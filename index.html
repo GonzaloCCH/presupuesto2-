@@ -75,6 +75,15 @@ header#top button.on .ic{transform:translateY(-1px) scale(1.07)}
 .cp input{height:36px;padding:2px;margin-bottom:2px}
 .chk{display:flex;align-items:center;gap:8px;padding:6px 0}
 .chk input{width:auto}
+/* Espaciado equilibrado y cuentas más compactas */
+.card{padding:13px;margin-bottom:14px}
+.item{padding:8px 0}
+.sub{margin-top:10px;padding-top:7px}
+.kv{padding:8px 0}
+.grid{gap:10px;margin-bottom:10px}
+.account-item{padding:4px 0}
+.account-item>.row{padding:2px 0}
+.account-item .tag{line-height:1.35}
 </style>
 </head>
 <body>
@@ -185,7 +194,7 @@ function refreshPreview(){var e=document.getElementById("bgPreview");if(e){var d
 /* inicio */
 function rowC(c){
   var a=ac(c),t=c.r;
-  return '<div class="item"><div class="row"><b>'+(t?"🔒 ":"")+esc(c.n)+'</b><span class="amt '+(t?"":a.d<0?"or":"ok")+'">'+f(t?a.ret:a.d)+'</span></div><div class="tag">'+(t?'Retenido (no se toca) · consumo en tarjeta '+f(a.cons):'Ingresos '+f(a.b.a+a.b.b)+' · gastados '+f(a.b.g))+'</div><div class="row" style="justify-content:flex-end">'+(t?'<button class="ghost" onclick="liberar(\''+c.id+'\')">Liberar y pagar tarjeta</button>':'')+'<button class="ghost" onclick="tgR(\''+c.id+'\')">'+(t?'Quitar retención':'Retener')+'</button></div></div>'}
+  return '<div class="item account-item"><div class="row"><b>'+(t?"🔒 ":"")+esc(c.n)+'</b><span class="amt '+(t?"":a.d<0?"or":"ok")+'">'+f(t?a.ret:a.d)+'</span></div><div class="tag">'+(t?'Retenido (no se toca) · consumo en tarjeta '+f(a.cons):'Ingresos '+f(a.b.a+a.b.b)+' · gastados '+f(a.b.g))+'</div><div class="row" style="justify-content:flex-end">'+(t?'<button class="ghost" onclick="liberar(\''+c.id+'\')">Liberar y pagar tarjeta</button>':'')+'<button class="ghost" onclick="tgR(\''+c.id+'\')">'+(t?'Quitar retención':'Retener')+'</button></div></div>'}
 function grpRow(g){
   var m=g.ids.map(function(i){return by(S.cfg.cuentas,i)}).filter(Boolean),d=R(m.reduce(function(t,c){var a=ac(c);return t+a.d+a.ret},0)),k="sg"+g.id;
   return '<div class="item">'+hd(k,"👥 "+esc(g.n),'Total de las cuentas <b class="'+(d<0?"or":"ok")+'">'+f(d)+'</b> · '+m.length+' cuentas',true)+(V.o[k]?m.map(rowC).join(""):'')+'</div>'}
@@ -417,6 +426,22 @@ function draw(){
   if(document.getElementById("sbi"))sbinfo();
   tp.className="st-"+S.ui.st;
   tp.innerHTML=IC.map(function(t){return '<button class="'+(V.tab===t[0]?"on":"")+'" onclick="go(\''+t[0]+'\')"><span class="ic" style="'+cv(ucol(t[0]))+'">'+t[1]+'</span>'+t[2]+'</button>'}).join("")}
+/* Deslizar horizontalmente para cambiar de pestaña sin tocar la barra */
+var swipeStart=null;
+document.addEventListener("touchstart",function(e){
+  if(V.sheet||!e.touches||e.touches.length!==1)return;
+  var t=e.target;
+  if(t.closest&&t.closest("button,input,select,textarea,a,[onclick]"))return;
+  swipeStart={x:e.touches[0].clientX,y:e.touches[0].clientY};
+},{passive:true});
+document.addEventListener("touchend",function(e){
+  if(!swipeStart||V.sheet||!e.changedTouches||!e.changedTouches.length){swipeStart=null;return;}
+  var dx=e.changedTouches[0].clientX-swipeStart.x,dy=e.changedTouches[0].clientY-swipeStart.y;swipeStart=null;
+  if(Math.abs(dx)<65||Math.abs(dx)<Math.abs(dy)*1.35)return;
+  var idx=IC.findIndex(function(t){return t[0]===V.tab;});
+  var next=idx+(dx<0?1:-1);
+  if(next>=0&&next<IC.length)go(IC[next][0]);
+},{passive:true});
 draw();
 if("serviceWorker" in navigator){window.addEventListener("load",function(){navigator.serviceWorker.register("sw.js").catch(function(){})})}
 </script>
