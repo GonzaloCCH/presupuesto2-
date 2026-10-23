@@ -313,17 +313,27 @@ function tgm(gid,cid){
   if(g.ids.indexOf(cid)>=0)g.ids=g.ids.filter(function(x){return x!==cid});
   else{S.grupos.forEach(function(o){o.ids=o.ids.filter(function(x){return x!==cid})});g.ids.push(cid)}
   save();draw()}
-function addGr(){var n=val("cakgr");if(!n){msg("Escribe un nombre para el grupo.");return}S.grupos.push({id:id(),n:n,ids:[]});save();clr(["cakgr"]);draw();msg("Grupo creado. Marca las cuentas que lo forman.")}
 function setCol(k,v){S.ui.c[k]=v;save();draw()}
 function allCol(v){IC.forEach(function(t){S.ui.c[t[0]]=v});save();draw()}
 function resetCol(){S.ui.c={};save();draw()}
-function rg(){
-  var L=S.cfg.cuentas,h='<div class="card">'+hd("cfrg","Retención y grupos de cuentas","Retener dinero · sumar cuentas");
-  if(!isO("cfrg"))return h+'</div>';
-  h+='<h2>Retener dinero (se paga con tarjeta)</h2>'+(L.length?L.map(function(c){return '<label class="chk"><input type="checkbox"'+(c.r?' checked':'')+' onchange="tgR(\''+c.id+'\')"> '+esc(c.n)+'</label>'}).join(""):'<div class="tag">Primero agrega cuentas.</div>')
-   +'<div class="tag" style="margin:4px 0 12px">Una cuenta retenida no se toca: sus gastos se cargan a la tarjeta y el dinero queda guardado hasta que lo liberes.</div><h2>Grupos de cuentas (se suman en Saldo por cuenta)</h2>';
-  S.grupos.forEach(function(g){h+='<div class="item"><div class="row"><input value="'+esc(g.n)+'"'+ch("grupos",g.id,"n")+'><button class="ghost" onclick="rm(\'grupos\',\''+g.id+'\')">Eliminar</button></div>'+L.map(function(c){return '<label class="chk"><input type="checkbox"'+(g.ids.indexOf(c.id)>=0?' checked':'')+' onchange="tgm(\''+g.id+'\',\''+c.id+'\')"> '+esc(c.n)+'</label>'}).join("")+'</div>'});
-  return h+'<input id="cakgr" placeholder="Nombre del grupo (ej. Coope total)" style="margin:6px 0 8px"><button style="width:100%" onclick="addGr()">Crear grupo</button></div>'}
+function ret(){
+  var L=S.cfg.cuentas,h='<div class="card">'+hd("cfret","Retención de cuentas","Retener dinero para pagar con tarjeta");
+  if(!isO("cfret"))return h+'</div>';
+  return h+(L.length?L.map(function(c){return '<label class="chk"><input type="checkbox"'+(c.r?' checked':'')+' onchange="tgR(\''+c.id+'\')"> '+esc(c.n)+'</label>'}).join(""):'<div class="tag">Primero agrega cuentas.</div>')+'<div class="tag" style="margin-top:6px">Una cuenta retenida no se toca: sus gastos se cargan a la tarjeta y el dinero queda guardado hasta que lo liberes.</div></div>'}
+function gr(){
+  var L=S.cfg.cuentas,h='<div class="card">'+hd("cfgr","Grupos de cuentas",S.grupos.length+" grupos · sumar saldos de varias cuentas");
+  if(!isO("cfgr"))return h+'</div>';
+  V.gn=V.gn||[];
+  h+='<h2>Nuevo grupo</h2><input id="cakgr" placeholder="Nombre del grupo (ej. Coope total)" style="margin-bottom:6px"><div class="tag">Marca las cuentas que se van a sumar:</div>'+(L.length?L.map(function(c){return '<label class="chk"><input type="checkbox"'+(V.gn.indexOf(c.id)>=0?' checked':'')+' onchange="gnTg(\''+c.id+'\')"> '+esc(c.n)+'</label>'}).join(""):'<div class="tag">Primero agrega cuentas.</div>')+'<button style="width:100%;margin:6px 0 12px" onclick="addGr()">Crear grupo</button>';
+  if(S.grupos.length){h+='<h2>Mis grupos</h2>';S.grupos.forEach(function(g){h+='<div class="item"><div class="row"><input value="'+esc(g.n)+'"'+ch("grupos",g.id,"n")+'><button class="ghost" onclick="rm(\'grupos\',\''+g.id+'\')">Eliminar</button></div>'+L.map(function(c){return '<label class="chk"><input type="checkbox"'+(g.ids.indexOf(c.id)>=0?' checked':'')+' onchange="tgm(\''+g.id+'\',\''+c.id+'\')"> '+esc(c.n)+'</label>'}).join("")+'</div>'})}
+  return h+'<div class="tag" style="margin-top:6px">En Saldo por cuenta, cada grupo aparece con su nombre y la suma. Al tocarlo se ven las cuentas que lo forman.</div></div>'}
+function gnTg(i){V.gn=V.gn||[];var k=V.gn.indexOf(i);if(k>=0)V.gn.splice(k,1);else V.gn.push(i)}
+function addGr(){
+  var n=val("cakgr");V.gn=V.gn||[];
+  if(!n){msg("Escribe un nombre para el grupo.");return}
+  if(V.gn.length<2){msg("Marca al menos dos cuentas.");return}
+  S.grupos.forEach(function(o){o.ids=o.ids.filter(function(x){return V.gn.indexOf(x)<0})});
+  S.grupos.push({id:id(),n:n,ids:V.gn.slice()});V.gn=[];save();clr(["cakgr"]);draw();msg("Grupo creado. Míralo en Saldo por cuenta.")}
 function icCard(){
   var ST=[["emoji","Emoji"],["esfera","Esfera 3D"],["relieve","Relieve 3D"],["cristal","Cristal"],["plano","Plano"]],h='<div class="card">'+hd("cfic","Iconos de navegación","Diseño y colores");
   if(!isO("cfic"))return h+'</div>';
@@ -381,8 +391,8 @@ function restaurar(){var t=val("rs");if(!t){msg("Pega primero el respaldo.");ret
   try{var o=JSON.parse(t);if(!o.cfg||!o.plan||!o.sal)throw 0;S=o;mig();save();clr(["rs"]);draw();msg("Respaldo restaurado")}catch(e){msg("Ese texto no es un respaldo válido.")}}
 function aju(){
   return '<div class="tag" style="margin-bottom:10px">Lo que agregues, cambies o elimines aquí aparece solo en todas las pantallas.</div>'
-   +cl("cats","Categorías")+cl("tipos","Tipos de gasto")+cl("cuentas","Cuentas, métodos de pago y entidades")+rg()+cl("gastos","Gastos (nombre, categoría y tipo)")+cl("ubic","Ubicaciones de deudas")+icCard()
-   +'<div class="card"><h2>Respaldo y exportar</h2><div class="tag" style="margin-bottom:8px">Copia tus datos para guardarlos en Notas. Para Excel, pega los gastos en una hoja.</div><button style="width:100%;margin-bottom:8px" onclick="copyText(JSON.stringify(S),\'Respaldo copiado\')">Copiar respaldo completo</button><button style="width:100%;margin-bottom:12px" onclick="copyTsv()">Copiar gastos para Excel</button><textarea id="rs" placeholder="Pega aquí un respaldo para restaurarlo"></textarea><button class="ghost" style="width:100%;border:1px solid var(--line)" onclick="restaurar()">Restaurar respaldo (reemplaza todo)</button></div><div class="tag" style="text-align:center;margin-top:6px">Versión 4</div>'}
+   +cl("cats","Categorías")+cl("tipos","Tipos de gasto")+cl("cuentas","Cuentas, métodos de pago y entidades")+ret()+gr()+cl("gastos","Gastos (nombre, categoría y tipo)")+cl("ubic","Ubicaciones de deudas")+icCard()
+   +'<div class="card"><h2>Respaldo y exportar</h2><div class="tag" style="margin-bottom:8px">Copia tus datos para guardarlos en Notas. Para Excel, pega los gastos en una hoja.</div><button style="width:100%;margin-bottom:8px" onclick="copyText(JSON.stringify(S),\'Respaldo copiado\')">Copiar respaldo completo</button><button style="width:100%;margin-bottom:12px" onclick="copyTsv()">Copiar gastos para Excel</button><textarea id="rs" placeholder="Pega aquí un respaldo para restaurarlo"></textarea><button class="ghost" style="width:100%;border:1px solid var(--line)" onclick="restaurar()">Restaurar respaldo (reemplaza todo)</button></div><div class="tag" style="text-align:center;margin-top:6px">Versión 5</div>'}
 function draw(){
   var T={ini:ini,res:res,pre:pre,sal:sal,cue:cue,deu:deu,fij:fij,aju:aju},m={},ap=document.getElementById("app"),sh=document.getElementById("sheet"),tp=document.getElementById("top"),isF=/^(INPUT|SELECT|TEXTAREA)$/;
   if(document.querySelectorAll)document.querySelectorAll("#app [id],#sheet [id]").forEach(function(e){if(isF.test(e.tagName))m[e.id]=e.value});
