@@ -75,6 +75,7 @@ header#top button.on .ic{transform:translateY(-1px) scale(1.07)}
 .cp input{height:36px;padding:2px;margin-bottom:2px}
 .chk{display:flex;align-items:center;gap:8px;padding:6px 0}
 .chk input{width:auto}
+button.mini{padding:2px 6px;font-size:12px}
 </style>
 </head>
 <body>
@@ -172,11 +173,13 @@ function lineS(r){
    +'<div class="tag">Presupuesto '+f(r.p)+' · acumulado '+f(r.a)+' · sobrante '+f(r.s.so)+'</div>'+(V.ed==="sal:"+x.id?form("sal",x,FP()):'')+'</div>'}
 /* inicio */
 function rowC(c){
-  var a=ac(c),t=c.r;
-  return '<div class="item"><div class="row"><b>'+(t?"🔒 ":"")+esc(c.n)+'</b><span class="amt '+(t?"":a.d<0?"or":"ok")+'">'+f(t?a.ret:a.d)+'</span></div><div class="tag">'+(t?'Retenido (no se toca) · consumo en tarjeta '+f(a.cons):'Ingresos '+f(a.b.a+a.b.b)+' · gastados '+f(a.b.g))+'</div><div class="row" style="justify-content:flex-end">'+(t?'<button class="ghost" onclick="liberar(\''+c.id+'\')">Liberar y pagar tarjeta</button>':'')+'<button class="ghost" onclick="tgR(\''+c.id+'\')">'+(t?'Quitar retención':'Retener')+'</button></div></div>'}
+  var a=ac(c),t=c.r,b1='<button class="ghost mini" onclick="tgR(\''+c.id+'\')">'+(t?'Quitar retención':'Retener')+'</button>';
+  return '<div class="item" style="padding:5px 0"><div class="row"><b>'+(t?"🔒 ":"")+esc(c.n)+'</b><span class="amt '+(t?"":a.d<0?"or":"ok")+'">'+f(t?a.ret:a.d)+'</span></div>'
+   +(t?'<div class="tag">Retenido (no se toca) · consumo en tarjeta '+f(a.cons)+'</div><div class="row" style="justify-content:flex-end;gap:2px"><button class="ghost mini" onclick="liberar(\''+c.id+'\')">Liberar y pagar tarjeta</button>'+b1+'</div>'
+     :'<div class="row"><span class="tag">Ingresos '+f(a.b.a+a.b.b)+' · gastados '+f(a.b.g)+'</span>'+b1+'</div>')+'</div>'}
 function grpRow(g){
   var m=g.ids.map(function(i){return by(S.cfg.cuentas,i)}).filter(Boolean),d=R(m.reduce(function(t,c){return t+ac(c).d},0)),rt=R(m.reduce(function(t,c){return t+ac(c).ret},0)),k="sg"+g.id;
-  return '<div class="item">'+hd(k,"👥 "+esc(g.n),'Disponible <b class="'+(d<0?"or":"ok")+'">'+f(d)+'</b>'+(rt?' · retenido '+f(rt):'')+' · '+m.length+' cuentas',true)+(V.o[k]?m.map(rowC).join(""):'')+'</div>'}
+  return '<div class="item">'+hd(k,"👥 "+esc(g.n),'Disponible <b class="'+(d<0?"or":"ok")+'">'+f(d)+'</b>'+(rt?' · retenido '+f(rt):''),true)+(V.o[k]?m.map(rowC).join(""):'')+'</div>'}
 function saldoCard(){
   var L=S.cfg.cuentas,tot=R(L.reduce(function(t,c){return t+ac(c).d},0)),st=tcs(),h='<div class="card">'+hd("sd","Saldo por cuenta",'Disponible <b class="'+(tot<0?"or":"ok")+'">'+f(tot)+'</b>'+(st?' · retenido '+f(st.ret):''));
   if(isO("sd")){
@@ -392,7 +395,7 @@ function restaurar(){var t=val("rs");if(!t){msg("Pega primero el respaldo.");ret
 function aju(){
   return '<div class="tag" style="margin-bottom:10px">Lo que agregues, cambies o elimines aquí aparece solo en todas las pantallas.</div>'
    +cl("cats","Categorías")+cl("tipos","Tipos de gasto")+cl("cuentas","Cuentas, métodos de pago y entidades")+ret()+gr()+cl("gastos","Gastos (nombre, categoría y tipo)")+cl("ubic","Ubicaciones de deudas")+icCard()
-   +'<div class="card"><h2>Respaldo y exportar</h2><div class="tag" style="margin-bottom:8px">Copia tus datos para guardarlos en Notas. Para Excel, pega los gastos en una hoja.</div><button style="width:100%;margin-bottom:8px" onclick="copyText(JSON.stringify(S),\'Respaldo copiado\')">Copiar respaldo completo</button><button style="width:100%;margin-bottom:12px" onclick="copyTsv()">Copiar gastos para Excel</button><textarea id="rs" placeholder="Pega aquí un respaldo para restaurarlo"></textarea><button class="ghost" style="width:100%;border:1px solid var(--line)" onclick="restaurar()">Restaurar respaldo (reemplaza todo)</button></div><div class="tag" style="text-align:center;margin-top:6px">Versión 5</div>'}
+   +'<div class="card"><h2>Respaldo y exportar</h2><div class="tag" style="margin-bottom:8px">Copia tus datos para guardarlos en Notas. Para Excel, pega los gastos en una hoja.</div><button style="width:100%;margin-bottom:8px" onclick="copyText(JSON.stringify(S),\'Respaldo copiado\')">Copiar respaldo completo</button><button style="width:100%;margin-bottom:12px" onclick="copyTsv()">Copiar gastos para Excel</button><textarea id="rs" placeholder="Pega aquí un respaldo para restaurarlo"></textarea><button class="ghost" style="width:100%;border:1px solid var(--line)" onclick="restaurar()">Restaurar respaldo (reemplaza todo)</button></div><div class="tag" style="text-align:center;margin-top:6px">Versión 6</div>'}
 function draw(){
   var T={ini:ini,res:res,pre:pre,sal:sal,cue:cue,deu:deu,fij:fij,aju:aju},m={},ap=document.getElementById("app"),sh=document.getElementById("sheet"),tp=document.getElementById("top"),isF=/^(INPUT|SELECT|TEXTAREA)$/;
   if(document.querySelectorAll)document.querySelectorAll("#app [id],#sheet [id]").forEach(function(e){if(isF.test(e.tagName))m[e.id]=e.value});
