@@ -221,11 +221,11 @@ function cl(k,t){
   var L=S.cfg[k],h='<div class="card">'+hd("cf"+k,t,L.length+" elementos");
   if(!V.o["cf"+k])return h+'</div>';
   if(k==="gastos"){L.forEach(function(x){h+='<div class="item"><div class="row" onclick="ted(\'cg:'+x.id+'\')" style="cursor:pointer"><b>'+esc(x.n)+'</b><span class="tag">'+nm(S.cfg.cats,x.c)+' · '+nm(S.cfg.tipos,x.t)+'</span></div>'+(V.ed==="cg:"+x.id?form("cfg.gastos",x,[["n","Nombre","t"],["c","Categoría","s",S.cfg.cats],["t","Tipo","s",S.cfg.tipos]]):'')+'</div>'});
-    h+='<input id="cak" placeholder="Nuevo gasto" style="margin:8px 0"><div class="grid"><select id="cgc">'+op(S.cfg.cats,"","Categoría…")+'</select><select id="cgt">'+op(S.cfg.tipos,"","Tipo…")+'</select></div>'}
+    h+='<input id="cak'+k+'" placeholder="Nuevo gasto" style="margin:8px 0"><div class="grid"><select id="cgc">'+op(S.cfg.cats,"","Categoría…")+'</select><select id="cgt">'+op(S.cfg.tipos,"","Tipo…")+'</select></div>'}
   else{L.forEach(function(x){h+='<div class="row" style="margin-bottom:6px"><input value="'+esc(x.n)+'"'+ch("cfg."+k,x.id,"n")+'><button class="ghost" onclick="rm(\'cfg.'+k+'\',\''+x.id+'\')">Eliminar</button></div>'});
-    h+='<input id="cak" placeholder="Nuevo elemento" style="margin:4px 0 8px">'}
+    h+='<input id="cak'+k+'" placeholder="Nuevo elemento" style="margin:4px 0 8px">'}
   return h+'<button style="width:100%" onclick="ad(\''+k+'\')">Agregar</button></div>'}
-function ad(k){var n=val("cak");if(!n){msg("Escribe un nombre.");return}var x={id:id(),n:n};if(k==="gastos"){x.c=val("cgc");x.t=val("cgt")}S.cfg[k].push(x);save();clr(["cak","cgc","cgt"]);draw();msg("Agregado")}
+function ad(k){var n=val("cak"+k);if(!n){msg("Escribe un nombre.");return}var x={id:id(),n:n};if(k==="gastos"){x.c=val("cgc");x.t=val("cgt")}S.cfg[k].push(x);save();clr(["cak"+k,"cgc","cgt"]);draw();msg("Agregado")}
 function copyText(t,ok){
   function fb(){var e=document.createElement("textarea");e.value=t;document.body.appendChild(e);e.select();try{document.execCommand("copy");msg(ok)}catch(x){msg("No se pudo copiar.")}document.body.removeChild(e)}
   try{navigator.clipboard.writeText(t).then(function(){msg(ok)},fb)}catch(e){fb()}}
